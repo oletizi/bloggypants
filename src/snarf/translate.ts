@@ -13,6 +13,29 @@ import TurndownService from 'turndown'
 
 const sourcedir = path.join('build', 'snarfed')
 const turndownService = new TurndownService()
+turndownService.addRule('figure', {
+    filter: 'figure',
+    replacement: function (_content, node: Node, _options){
+        const e = node as Element
+        return '<Figure src="INSERT SOURCE" caption="INSERT CAPTION"/>'
+    }
+})
+turndownService.addRule('img', {
+    filter: 'img',
+    replacement: function (_content, node: Node, _options) {
+        const e = node as Element
+        const src = e.getAttribute('src')
+        const alt = e.hasAttribute('alt') ? e.getAttribute('alt') : ''
+        const c = e.getAttribute('class') ? e.getAttribute('class') : ''
+
+        // @ts-ignore
+        if (c.includes('wp-post-image')) {
+            return ''
+        }else {
+            return `<img class="" src="${src}" alt="${alt}">`
+        }
+    }
+})
 
 async function main() {
     const todo = [sourcedir]
@@ -27,7 +50,7 @@ async function main() {
                     }
                 } else {
                     if (stats.isFile() && item.endsWith('index.html')) {
-                        const translated = item.replace('index.html', 'index.md').replace('build/snarfed', 'src/pages')
+                        const translated = item.replace('index.html', 'index.mdx').replace('build/snarfed', 'src/pages')
                         await translate(item, translated)
 
                     } else {
@@ -47,6 +70,7 @@ async function translate(inpath: string, outpath: string) {
     let title = ''
     let author = ''
     let date = new Date()
+    let featuredImage = ''
     const outdir = path.dirname(outpath)
     console.log(`translate(): inpath: ${inpath}, outpath: ${outpath}, outdir: ${outdir}`)
     try {
@@ -89,6 +113,7 @@ async function translate(inpath: string, outpath: string) {
         if (images) {
             for (const image of images) {
                 let src = image.src
+
                 if (src && src.startsWith('/')) {
                     src = 'https://tetrate.io' + src
                     const imageUrl = new URL(src)
@@ -116,17 +141,23 @@ async function translate(inpath: string, outpath: string) {
                     }
                     // update the image url
                     image.src = outfile.replace('public', '')
+                    if (image.hasAttribute('class') && image.getAttribute('class')?.includes('wp-post-image')) {
+                        featuredImage = image.src
+                    }
                 }
             }
         }
         let markdown = turndownService.turndown(entry.innerHTML)
-        markdown = `---\n` +
+        markdown =
+            `---\n` +
             `layout: ../../../layouts/layout.astro\n` +
             `title: ${title}\n` +
             `author: ${author}\n` +
             `date: ${format(date, 'yyyy-MM-dd')}\n` +
-            `---\n`
-            + markdown
+            `featuredImage: ${featuredImage}\n` +
+            `---\n` +
+            'import {Figure} from "@/components/Figure.tsx"\n\n' +
+            markdown
 
         await fs.writeFile(outpath, markdown)
     } else {

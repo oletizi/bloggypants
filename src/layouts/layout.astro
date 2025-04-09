@@ -26,14 +26,20 @@ const {frontmatter} = Astro.props
             font-weight: normal;
             color: gray;
         }
+        img {
+            max-width: 1000px !important;
+        }
     </style>
 </head>
 <body>
-<div style="margin: 0 4rem 0 4rem">
-    <h1>{frontmatter.title}</h1>
-    <div>Date: {format(new Date(frontmatter.date), 'LLL d, yyyy')}</div>
-    <div>Author: {frontmatter.author}</div>
-    <slot/>
+<div style="width: 100%; margin: 0 auto;">
+    <div style="max-width: 1000px; margin: 0 auto">
+        <img src={frontmatter.featuredImage} alt="Featured Image"/>
+        <h1>{frontmatter.title}</h1>
+        <div>Date: {format(new Date(frontmatter.date), 'LLL d, yyyy')}</div>
+        <div>Author: {frontmatter.author}</div>
+        <slot/>
+    </div>
 </div>
 </body>
 </html>

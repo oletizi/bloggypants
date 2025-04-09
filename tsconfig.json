@@ -10,5 +10,8 @@
     "outDir": "dist",
     "verbatimModuleSyntax": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "paths": {
+    "@/*": ["./src/*"]
+  }
 }
