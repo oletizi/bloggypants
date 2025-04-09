@@ -41,6 +41,9 @@ async function main() {
 }
 
 async function translate(inpath: string, outpath: string) {
+    let title = ''
+    let author = ''
+    let date = new Date()
     const outdir = path.dirname(outpath)
     console.log(`translate(): inpath: ${inpath}, outpath: ${outpath}, outdir: ${outdir}`)
     try {
@@ -52,12 +55,20 @@ async function translate(inpath: string, outpath: string) {
     const dom = new JSDOM(html)
     const doc = dom.window.document
     const h1 = doc.querySelector('h1')
-    let title = ''
     if (h1 && h1.textContent) {
         title = h1.textContent?.trim()
     }
     console.log(`  TITLE: ${title}`)
 
+
+    const published = doc.querySelector('time.entry__published')
+    if (published && published.hasAttribute('datetime')) {
+        const datetime = published.getAttribute('datetime')
+        if (datetime) {
+            date = new Date(Date.parse(datetime))
+        }
+    }
+    console.log(`  DATE : ${date}`)
 }
 
 main().then(() => {
