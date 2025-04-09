@@ -69,6 +69,17 @@ async function translate(inpath: string, outpath: string) {
         }
     }
     console.log(`  DATE : ${date}`)
+
+    const spans = doc.querySelectorAll('#site-content p span')
+    for (const span of spans) {
+        if(span.textContent && span.textContent.toLowerCase().includes('author')) {
+            const [_label, value] = span.textContent.split(': ')
+            if (value) {
+                author = value.trim()
+            }
+        }
+    }
+    console.log(`  AUTHOR: ${author}`)
 }
 
 main().then(() => {
