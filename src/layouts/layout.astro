@@ -1,13 +1,4 @@
 ---
-// interface Props {
-//     title: string
-//     slug: string
-//     excerpt?: string
-//     featuredImage: string
-//     categories: string[]
-//     author: string
-//     date: string
-// }
 const {frontmatter} = Astro.props
 ---
 <html lang="en">
@@ -39,6 +30,7 @@ const {frontmatter} = Astro.props
 <body>
 <div style="margin: 0 4rem 0 4rem">
     <h1>{frontmatter.title}</h1>
+    <div>Author: {frontmatter.author}</div>
     <slot/>
 </div>
 </body>
