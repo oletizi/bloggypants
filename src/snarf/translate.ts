@@ -1,5 +1,6 @@
 import fs from 'fs/promises'
 import path from 'node:path'
+import {JSDOM} from 'jsdom'
 //<div id="site-content
 //  <h1 class="c-heading u-font-h2 u-color-light">
 //                     <p class="u-fz-h6 u-color-light">
@@ -9,7 +10,6 @@ import path from 'node:path'
 // <div class="entry__content">
 
 const sourcedir = path.join('build', 'snarfed')
-const targetdir = path.join('build', 'translated')
 
 async function main() {
     const todo = [sourcedir]
@@ -24,7 +24,9 @@ async function main() {
                     }
                 } else {
                     if (stats.isFile() && item.endsWith('index.html')) {
-                        console.log(`Got one: ${item}`)
+                        const translated = item.replace('index.html', 'index.md').replace('snarfed', 'translated')
+                        await translate(item, translated)
+
                     } else {
                         console.log(`Not sure what this is: ${item}`)
                     }
@@ -39,7 +41,23 @@ async function main() {
 }
 
 async function translate(inpath: string, outpath: string) {
-    console.log(`translate(): inpath: ${inpath}, outpath: ${outpath}`)
+    const outdir = path.dirname(outpath)
+    console.log(`translate(): inpath: ${inpath}, outpath: ${outpath}, outdir: ${outdir}`)
+    try {
+        await fs.stat(outdir)
+    } catch (e) {
+        await fs.mkdir(outdir, {recursive: true})
+    }
+    const html = (await fs.readFile(inpath)).toString()
+    const dom = new JSDOM(html)
+    const doc = dom.window.document
+    const h1 = doc.querySelector('h1')
+    let title = ''
+    if (h1 && h1.textContent) {
+        title = h1.textContent?.trim()
+    }
+    console.log(`  TITLE: ${title}`)
+
 }
 
 main().then(() => {
