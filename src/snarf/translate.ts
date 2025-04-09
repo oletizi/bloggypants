@@ -92,7 +92,8 @@ async function translate(inpath: string, outpath: string) {
                     src = 'https://tetrate.io' + src
                     const imageUrl = new URL(src)
                     console.log(`  fetching image: ${imageUrl}`)
-                    const outfile = path.join(outdir, path.basename(imageUrl.pathname))
+                    let filename = path.basename(imageUrl.pathname)
+                    const outfile = path.join(outdir.replace('translated', 'static'), filename)
                     try {
                         await fs.stat(outfile)
                         console.log(`  IMAGE CACHE HIT: ${outfile}`)
@@ -101,12 +102,19 @@ async function translate(inpath: string, outpath: string) {
                         const res = await fetch(imageUrl)
                         if (res.ok) {
                             console.log(`  writing image to: ${outfile}`)
+                            try {
+                                await fs.stat(path.dirname(outfile))
+                            } catch (e) {
+                                await fs.mkdir(path.dirname(outfile), {recursive: true})
+                            }
                             await fs.writeFile(outfile, await res.bytes())
                             console.log(`  done.`)
                         } else {
                             console.error(`BARF: Error fetching image: ${imageUrl}: ${res.status} ${res.statusText}`)
                         }
                     }
+                    // update the image url
+                    image.src = outfile.replace('build/static', '')
                 }
             }
         }
