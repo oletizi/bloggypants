@@ -2,7 +2,7 @@ import * as fs from 'fs/promises'
 import {XMLParser} from 'fast-xml-parser'
 import path from 'node:path'
 
-const outdir = './build'
+const outdir = path.join('build', 'snarfed')
 
 async function main() {
     try {

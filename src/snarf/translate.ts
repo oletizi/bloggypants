@@ -8,7 +8,8 @@ import path from 'node:path'
 //                     <div class="o-button-group"></div>
 // <div class="entry__content">
 
-const sourcedir = 'build'
+const sourcedir = path.join('build', 'snarfed')
+const targetdir = path.join('build', 'translated')
 
 async function main() {
     const todo = [sourcedir]
@@ -35,6 +36,10 @@ async function main() {
         }
     }
 
+}
+
+async function translate(inpath: string, outpath: string) {
+    console.log(`translate(): inpath: ${inpath}, outpath: ${outpath}`)
 }
 
 main().then(() => {
