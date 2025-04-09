@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "snarf": "tsx src/snarf/snarf.ts"
+    "snarf": "tsx src/snarf/snarf.ts",
+    "translate": "tsx src/snarf/translate.ts"
   },
   "dependencies": {
     "@types/node": "^22.14.0",
