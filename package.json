@@ -15,10 +15,12 @@
     "astro": "^5.6.1",
     "fast-xml-parser": "^5.2.0",
     "html-dom-parser": "^5.0.13",
-    "jsdom": "^26.0.0"
+    "jsdom": "^26.0.0",
+    "turndown": "^7.2.0"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
+    "@types/turndown": "^5.0.5",
     "typescript": "^5.5.3"
   },
   "private": true

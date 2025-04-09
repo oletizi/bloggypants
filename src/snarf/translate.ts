@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import path from 'node:path'
 import {JSDOM} from 'jsdom'
+import TurndownService from 'turndown'
 //<div id="site-content
 //  <h1 class="c-heading u-font-h2 u-color-light">
 //                     <p class="u-fz-h6 u-color-light">
@@ -10,6 +11,7 @@ import {JSDOM} from 'jsdom'
 // <div class="entry__content">
 
 const sourcedir = path.join('build', 'snarfed')
+const turndownService = new TurndownService()
 
 async function main() {
     const todo = [sourcedir]
@@ -72,7 +74,7 @@ async function translate(inpath: string, outpath: string) {
 
     const spans = doc.querySelectorAll('#site-content p span')
     for (const span of spans) {
-        if(span.textContent && span.textContent.toLowerCase().includes('author')) {
+        if (span.textContent && span.textContent.toLowerCase().includes('author')) {
             const [_label, value] = span.textContent.split(': ')
             if (value) {
                 author = value.trim()
@@ -80,6 +82,13 @@ async function translate(inpath: string, outpath: string) {
         }
     }
     console.log(`  AUTHOR: ${author}`)
+    const entry = doc.querySelector('div.entry__content')
+    if (entry) {
+        const markdown = turndownService.turndown(entry.innerHTML)
+        await fs.writeFile(outpath, markdown)
+    } else {
+        console.error('BARF: NO entry content')
+    }
 }
 
 main().then(() => {
