@@ -10,14 +10,18 @@ import TurndownService from 'turndown'
 //                         <span class="entry__separator">|</span> <span>Author:  Jimmy Song</span></p>
 //                     <div class="o-button-group"></div>
 // <div class="entry__content">
-
+const width = `100%`
 const sourcedir = path.join('build', 'snarfed')
 const turndownService = new TurndownService()
 turndownService.addRule('figure', {
     filter: 'figure',
     replacement: function (_content, node: Node, _options){
         const e = node as Element
-        return '<Figure src="INSERT SOURCE" caption="INSERT CAPTION"/>'
+        const img = e.querySelector('img')
+        const caption = e.querySelector('figcaption')?.textContent
+        const src = img ? img.src : ''
+
+        return `<Figure src="${src}" width={"${width}"} caption="${caption}"/>`
     }
 })
 turndownService.addRule('img', {
@@ -156,7 +160,7 @@ async function translate(inpath: string, outpath: string) {
             `date: ${format(date, 'yyyy-MM-dd')}\n` +
             `featuredImage: ${featuredImage}\n` +
             `---\n` +
-            'import {Figure} from "@/components/Figure.tsx"\n\n' +
+            'import {Figure} from "../../../components/Figure.tsx"\n\n' +
             markdown
 
         await fs.writeFile(outpath, markdown)
