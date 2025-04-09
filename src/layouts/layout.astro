@@ -1,4 +1,5 @@
 ---
+import {format} from 'date-fns'
 const {frontmatter} = Astro.props
 ---
 <html lang="en">
@@ -30,6 +31,7 @@ const {frontmatter} = Astro.props
 <body>
 <div style="margin: 0 4rem 0 4rem">
     <h1>{frontmatter.title}</h1>
+    <div>Date: {format(new Date(frontmatter.date), 'LLL d, yyyy')}</div>
     <div>Author: {frontmatter.author}</div>
     <slot/>
 </div>

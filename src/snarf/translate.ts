@@ -1,5 +1,6 @@
 import fs from 'fs/promises'
 import path from 'node:path'
+import {format} from 'date-fns'
 import {JSDOM} from 'jsdom'
 import TurndownService from 'turndown'
 //<div id="site-content
@@ -26,7 +27,7 @@ async function main() {
                     }
                 } else {
                     if (stats.isFile() && item.endsWith('index.html')) {
-                        const translated = item.replace('index.html', 'index.md').replace('snarfed', 'translated')
+                        const translated = item.replace('index.html', 'index.md').replace('build/snarfed', 'src/pages')
                         await translate(item, translated)
 
                     } else {
@@ -91,14 +92,14 @@ async function translate(inpath: string, outpath: string) {
                 if (src && src.startsWith('/')) {
                     src = 'https://tetrate.io' + src
                     const imageUrl = new URL(src)
-                    console.log(`  fetching image: ${imageUrl}`)
                     let filename = path.basename(imageUrl.pathname)
-                    const outfile = path.join(outdir.replace('translated', 'static'), filename)
+                    const outfile = path.join(outdir.replace('src/pages', 'public'), filename)
                     try {
                         await fs.stat(outfile)
                         console.log(`  IMAGE CACHE HIT: ${outfile}`)
                     } catch (e) {
                         console.log(`  IMAGE CACHE MISS: ${outfile}`)
+                        console.log(`  fetching image: ${imageUrl}`)
                         const res = await fetch(imageUrl)
                         if (res.ok) {
                             console.log(`  writing image to: ${outfile}`)
@@ -114,11 +115,19 @@ async function translate(inpath: string, outpath: string) {
                         }
                     }
                     // update the image url
-                    image.src = outfile.replace('build/static', '')
+                    image.src = outfile.replace('public', '')
                 }
             }
         }
-        const markdown = turndownService.turndown(entry.innerHTML)
+        let markdown = turndownService.turndown(entry.innerHTML)
+        markdown = `---\n` +
+            `layout: ../../../layouts/layout.astro\n` +
+            `title: ${title}\n` +
+            `author: ${author}\n` +
+            `date: ${format(date, 'yyyy-MM-dd')}\n` +
+            `---\n`
+            + markdown
+
         await fs.writeFile(outpath, markdown)
     } else {
         console.error('BARF: NO entry content')
