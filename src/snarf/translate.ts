@@ -84,6 +84,32 @@ async function translate(inpath: string, outpath: string) {
     console.log(`  AUTHOR: ${author}`)
     const entry = doc.querySelector('div.entry__content')
     if (entry) {
+        const images = entry.querySelectorAll('img')
+        if (images) {
+            for (const image of images) {
+                let src = image.src
+                if (src && src.startsWith('/')) {
+                    src = 'https://tetrate.io' + src
+                    const imageUrl = new URL(src)
+                    console.log(`  fetching image: ${imageUrl}`)
+                    const outfile = path.join(outdir, path.basename(imageUrl.pathname))
+                    try {
+                        await fs.stat(outfile)
+                        console.log(`  IMAGE CACHE HIT: ${outfile}`)
+                    } catch (e) {
+                        console.log(`  IMAGE CACHE MISS: ${outfile}`)
+                        const res = await fetch(imageUrl)
+                        if (res.ok) {
+                            console.log(`  writing image to: ${outfile}`)
+                            await fs.writeFile(outfile, await res.bytes())
+                            console.log(`  done.`)
+                        } else {
+                            console.error(`BARF: Error fetching image: ${imageUrl}: ${res.status} ${res.statusText}`)
+                        }
+                    }
+                }
+            }
+        }
         const markdown = turndownService.turndown(entry.innerHTML)
         await fs.writeFile(outpath, markdown)
     } else {
