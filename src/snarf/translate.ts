@@ -21,6 +21,9 @@ turndownService.addRule('figure', {
     filter: 'figure',
     replacement: function (_content, node: Node, _options) {
         const e = node as Element
+        if (e.querySelector('iframe')) {
+            return `<figure>${_content}</figure>`
+        }
         const img = e.querySelector('img')
         const caption = e.querySelector('figcaption')?.textContent
         const src = img ? img.getAttribute('src') : ''
@@ -28,7 +31,7 @@ turndownService.addRule('figure', {
         if (importedImage) {
             return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}"/>\n`
         } else {
-            return `// YIKES! ${src} does not map to an imported image\n`
+            return `**YIKES! ${src} does not map to an imported image**\n`
         }
     }
 })
@@ -46,13 +49,27 @@ turndownService.addRule('img', {
 
         const alt = e.hasAttribute('alt') ? e.getAttribute('alt') : ''
         const clazz = e.getAttribute('class') ? e.getAttribute('class') : ''
+        const importedImage = src ? imageMap.get(src) : null
         if (clazz && clazz.includes('wp-post-image')) {
             return ''
+        } else if (importedImage) {
+            return `<Image class="" src="${importedImage}" alt="${alt}">`
         } else {
-            return `<img class="" src="${src}" alt="${alt}">`
+            return ''
         }
     }
 })
+
+/**
+ * Leave anchor tags untouched for imported content. It's just easier that way
+ */
+turndownService.keep('a')
+
+/**
+ * Leave iframes untouched.
+ */
+turndownService.keep('iframe')
+
 
 /**
  * Special handling for <style>
@@ -154,7 +171,7 @@ async function translate(inpath: string, outpath: string) {
     const doc = dom.window.document
     const h1 = doc.querySelector('h1')
     if (h1 && h1.textContent) {
-        title = h1.textContent?.trim()
+        title = encodeURIComponent(h1.textContent?.trim())
     }
     console.log(`  TITLE: ${title}`)
 

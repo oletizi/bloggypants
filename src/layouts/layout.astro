@@ -40,7 +40,7 @@ const {frontmatter} = Astro.props
 <div style="width: 100%; margin: 0 auto;">
     <div style="max-width: 1000px; margin: 0 auto">
         <img src={frontmatter.featuredImage} alt="Featured Image"/>
-        <h1>{frontmatter.title}</h1>
+        <h1>{decodeURIComponent(frontmatter.title)}</h1>
         <div>Date: {format(new Date(frontmatter.date), 'LLL d, yyyy')}</div>
         <div>Author: {frontmatter.author}</div>
         <slot/>
