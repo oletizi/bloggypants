@@ -20,11 +20,12 @@ turndownService.addRule('figure', {
         const e = node as Element
         const img = e.querySelector('img')
         const caption = e.querySelector('figcaption')?.textContent
-        const src = img ? img.src : ''
+        const src = img ? img.getAttribute('src') : ''
 
         return `<Figure src="${src}" width={"${width}"} caption="${caption}"/>`
     }
 })
+
 
 /**
  * Special handling for <img>
@@ -33,7 +34,9 @@ turndownService.addRule('img', {
     filter: 'img',
     replacement: function (_content, node: Node, _options) {
         const e = node as Element
-        const src = e.getAttribute('src')
+        e.setAttribute('src', antinormalizeDecode(e.getAttribute('src')))
+        const src = e.getAttribute('src') //antinormalizeDecode(e.getAttribute('src'))
+
         const alt = e.hasAttribute('alt') ? e.getAttribute('alt') : ''
         const clazz = e.getAttribute('class') ? e.getAttribute('class') : ''
         if (clazz && clazz.includes('wp-post-image')) {
@@ -106,7 +109,6 @@ async function main() {
             }
         }
     }
-
 }
 
 /**
@@ -207,7 +209,9 @@ async function translate(inpath: string, outpath: string) {
                         }
                     }
                     // update the image url
-                    image.src = outfile.replace('public', '')
+                    // image.src = `ANTINORMALIZE${path.basename(outfile)}`
+                    image.src = antinormalizeEncode(path.basename(outfile))
+                    console.log(`  updated image src: ${image.src}`)
                     if (image.hasAttribute('class') && image.getAttribute('class')?.includes('wp-post-image')) {
                         featuredImage = image.src
                     }
@@ -235,6 +239,21 @@ async function translate(inpath: string, outpath: string) {
         console.error('BARF: NO entry content')
     }
 }
+
+function antinormalizeEncode(src: string | null): string {
+    // return src
+    //     ? antinormalizeToken + path.basename(src)
+    //     : ''
+    return src ? path.basename(src) : ''
+}
+
+function antinormalizeDecode(src: string | null): string {
+    // return src && src.includes(antinormalizeToken)
+    //     ? './' + src.substring(src.indexOf(antinormalizeToken) + antinormalizeToken.length)
+    //     : src ? src : ''
+    return src ? src : ''
+}
+
 
 main().then(() => {
     console.log('Done.')
