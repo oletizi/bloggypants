@@ -116,6 +116,14 @@ async function main() {
             }
         }
     }
+    let content = '<ul>'
+    for (const item of index) {
+        console.log(item)
+        const relativePath = item.replace('src/pages', '').replace('index.mdx', '')
+        content += `<li><a href="${relativePath}">${path.basename(relativePath)}</a></li>\n`
+    }
+    content += '</ul>'
+    await fs.writeFile('src/pages/blogs.md', content, 'utf8')
 }
 
 /**
