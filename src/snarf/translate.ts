@@ -9,7 +9,10 @@ const sourcedir = path.join('build', 'snarfed')
 const targetdir = path.join('src', 'pages')
 const turndownService = new TurndownService()
 const layoutPath = path.join('..', '..', '..', 'layouts', 'layout.astro')
-const figureImport = 'import {Figure} from "../../../components/Figure.tsx"'
+const figureImport = 'import Figure from "@/components/Figure.astro"'
+// XXX: Ick. This shouldn't be global, but can't figure out how to pass a scoped version of it into the turndown service
+// for access by the relevant rules. If this was long-lived code, I'd do it differently
+const imageMap: Map<string, string> = new Map()
 
 /**
  * Special handling for <figure>
@@ -21,8 +24,12 @@ turndownService.addRule('figure', {
         const img = e.querySelector('img')
         const caption = e.querySelector('figcaption')?.textContent
         const src = img ? img.getAttribute('src') : ''
-
-        return `<Figure src="${src}" width={"${width}"} caption="${caption}"/>`
+        const importedImage = src ? imageMap.get(src) : null
+        if (importedImage) {
+            return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}"/>\n`
+        } else {
+            return `// YIKES! ${src} does not map to an imported image\n`
+        }
     }
 })
 
@@ -178,6 +185,8 @@ async function translate(inpath: string, outpath: string) {
         // Download images from tetrate.io
         //
         const images = entry.querySelectorAll('img')
+        const imports: string[] = []
+
         if (images) {
             for (const image of images) {
                 let src = image.src
@@ -211,6 +220,9 @@ async function translate(inpath: string, outpath: string) {
                     // update the image url
                     // image.src = `ANTINORMALIZE${path.basename(outfile)}`
                     image.src = antinormalizeEncode(path.basename(outfile))
+                    const importedImage = `img${imports.length}`
+                    imageMap.set(image.src, importedImage)
+                    imports.push(`import ${importedImage} from "${image.src}"`)
                     console.log(`  updated image src: ${image.src}`)
                     if (image.hasAttribute('class') && image.getAttribute('class')?.includes('wp-post-image')) {
                         featuredImage = image.src
@@ -231,7 +243,10 @@ async function translate(inpath: string, outpath: string) {
             `date: ${format(date, 'yyyy-MM-dd')}\n` +
             `featuredImage: ${featuredImage}\n` +
             `---\n` +
-            `${figureImport}\n\n` + // mdx parser seems to want a double newline after imports
+            `import {Image} from "astro:assets"\n` +
+            `${figureImport}\n` +
+            imports.join('\n') +
+            `\n\n` +
             markdown
 
         await fs.writeFile(outpath, markdown)
