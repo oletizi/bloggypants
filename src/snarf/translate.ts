@@ -39,7 +39,7 @@ turndownService.addRule('figure', {
         const src = img ? img.getAttribute('src') : ''
         const importedImage = src ? imageMap.get(src) : null
         if (importedImage) {
-            return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}"/>\n`
+            return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption ? caption : ''}"/>\n`
         } else {
             return `**YIKES! ${src} does not map to an imported image**\n`
         }
