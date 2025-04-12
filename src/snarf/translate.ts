@@ -14,6 +14,16 @@ const figureImport = 'import Figure from "@/components/Figure.astro"'
 // for access by the relevant rules. If this was long-lived code, I'd do it differently
 const imageMap: Map<string, string> = new Map()
 
+interface Article {
+    slug: string,
+    title: string,
+    excerpt: string,
+    featuredImage: string,
+    categories: string[],
+    author: string,
+    date: Date,
+}
+
 /**
  * Special handling for <figure>
  */
@@ -107,7 +117,7 @@ function translateImagePath(markdownPath: string, imageName: string): string {
  */
 async function main() {
     const todo = [sourcedir]
-    const index = []
+    const articles: Article[] = []
     while (todo.length > 0) {
         const item = todo.pop()
         if (item) {
@@ -121,8 +131,8 @@ async function main() {
                     if (stats.isFile() && item.endsWith('index.html')) {
                         // const markdownPath = item.replace('index.html', 'index.mdx').replace('build/snarfed', 'src/pages')
                         const markdownPath = translateHtmlPathToMarkdownPath(sourcedir, targetdir, item)
-                        await translate(item, markdownPath)
-                        index.push(markdownPath)
+                        const article = await translate(item, markdownPath)
+                        articles.push(article)
                     } else {
                         console.log(`Not sure what this is: ${item}`)
                     }
@@ -134,10 +144,12 @@ async function main() {
         }
     }
     let content = '<ul>'
-    for (const item of index) {
+    for (const item of articles.sort((a, b) => {
+        return  b.date.getTime() - a.date.getTime()
+    })) {
         console.log(item)
-        const relativePath = item.replace('src/pages', '').replace('index.mdx', '')
-        content += `<li><a href="${relativePath}">${path.basename(relativePath)}</a></li>\n`
+        const slug = item.slug
+        content += `<li><span>${format(item.date,'yyyy-MM-dd')}: </span><a href="${slug}" target="_blank">${path.basename(slug)}</a></li>\n`
     }
     content += '</ul>'
     await fs.writeFile('src/pages/blogs.md', content, 'utf8')
@@ -151,10 +163,15 @@ async function main() {
  * @param outpath the destination markdown/mdx file
  */
 async function translate(inpath: string, outpath: string) {
-    let title = ''
-    let author = ''
-    let date = new Date()
-    let featuredImage = ''
+    const article: Article = {
+        author: '',
+        categories: [],
+        date: new Date(Date.parse('2018-01-01')),
+        excerpt: '',
+        featuredImage: '',
+        slug: path.dirname(outpath.replace(targetdir, '')),
+        title: ''
+    }
     const outdir = path.dirname(outpath)
     console.log(`translate(): inpath: ${inpath}, outpath: ${outpath}, outdir: ${outdir}`)
     try {
@@ -171,9 +188,9 @@ async function translate(inpath: string, outpath: string) {
     const doc = dom.window.document
     const h1 = doc.querySelector('h1')
     if (h1 && h1.textContent) {
-        title = encodeURIComponent(h1.textContent?.trim())
+        article.title = encodeURIComponent(h1.textContent?.trim())
     }
-    console.log(`  TITLE: ${title}`)
+    console.log(`  TITLE: ${article.title}`)
 
     //
     // Find the <time.entry__published> tag and make it the date
@@ -182,10 +199,10 @@ async function translate(inpath: string, outpath: string) {
     if (published && published.hasAttribute('datetime')) {
         const datetime = published.getAttribute('datetime')
         if (datetime) {
-            date = new Date(Date.parse(datetime))
+            article.date = new Date(Date.parse(datetime))
         }
     }
-    console.log(`  DATE : ${date}`)
+    console.log(`  DATE : ${article.date}`)
 
     //
     // Find and parse the <span> containing the byline and make it the author
@@ -195,11 +212,11 @@ async function translate(inpath: string, outpath: string) {
         if (span.textContent && span.textContent.toLowerCase().includes('author')) {
             const [_label, value] = span.textContent.split(': ')
             if (value) {
-                author = value.trim()
+                article.author = value.trim()
             }
         }
     }
-    console.log(`  AUTHOR: ${author}`)
+    console.log(`  AUTHOR: ${article.author}`)
 
     //
     // Find <div.entry__content> and transform it to markdown
@@ -243,14 +260,13 @@ async function translate(inpath: string, outpath: string) {
                         }
                     }
                     // update the image url
-                    // image.src = `ANTINORMALIZE${path.basename(outfile)}`
                     image.src = antinormalizeEncode(path.basename(outfile))
                     const importedImage = `img${imports.length}`
                     imageMap.set(image.src, importedImage)
                     imports.push(`import ${importedImage} from "${image.src}"`)
                     console.log(`  updated image src: ${image.src}`)
                     if (image.hasAttribute('class') && image.getAttribute('class')?.includes('wp-post-image')) {
-                        featuredImage = image.src
+                        article.featuredImage = image.src
                     }
                 }
             }
@@ -263,10 +279,11 @@ async function translate(inpath: string, outpath: string) {
         markdown =
             `---\n` +
             `layout: ${layoutPath}\n` +
-            `title: ${title}\n` +
-            `author: ${author}\n` +
-            `date: ${format(date, 'yyyy-MM-dd')}\n` +
-            `featuredImage: ${featuredImage}\n` +
+            `slug: ${article.slug}\n` +
+            `title: ${article.title}\n` +
+            `author: ${article.author}\n` +
+            `date: ${format(article.date, 'yyyy-MM-dd')}\n` +
+            `featuredImage: ${article.featuredImage}\n` +
             `---\n` +
             `import {Image} from "astro:assets"\n` +
             `${figureImport}\n` +
@@ -278,6 +295,7 @@ async function translate(inpath: string, outpath: string) {
     } else {
         console.error('BARF: NO entry content')
     }
+    return article
 }
 
 function antinormalizeEncode(src: string | null): string {
