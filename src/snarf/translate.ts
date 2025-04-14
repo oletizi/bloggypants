@@ -9,12 +9,10 @@ const sourcedir = path.join('build', 'snarfed')
 const targetdir = path.join('src', 'pages')
 const turndownService = new TurndownService()
 const layoutPath = path.join('..', '..', '..', 'layouts', 'layout.astro')
-const figureImport = 'import Figure from "@/components/Figure.astro"'
-const inlinePromoImport = 'import InlinePromo from "@/components/InlinePromo.astro"'
 const componentImports = [
     `import {Image} from "astro:assets"`,
-    figureImport,
-    inlinePromoImport
+    'import Figure from "@/components/Figure.astro"',
+    'import InlinePromo from "@/components/InlinePromo.astro"',
 ]
 // XXX: Ick. These shouldn't be global, but can't figure out how to pass a scoped version of them into the turndown service
 // for access by the relevant rules. If this was long-lived code, I'd do it differently

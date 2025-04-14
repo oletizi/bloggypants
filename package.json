@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "snarf": "tsx src/snarf/snarf.ts",
-    "translate": "tsx src/snarf/translate.ts"
+    "translate": "npm run snarf && tsx src/snarf/translate.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.3",
