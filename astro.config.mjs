@@ -9,5 +9,8 @@ export default defineConfig({
         shikiConfig: {
             theme: 'dracula',
         },
+    },
+    image: {
+        domains: ["googlecontent.com"],
     }
 });

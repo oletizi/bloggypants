@@ -101,7 +101,7 @@ turndownService.addRule('figure', {
         if (importedImage) {
             return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}" index={${currentArticle?.figures?.length}}/>\n`
         } else {
-            return `**YIKES! ${src} does not map to an imported image**\n`
+            return `<figure>![${caption}](${src})<figcaption>${caption}</figcaption></figure>`
         }
     }
 })
