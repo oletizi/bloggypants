@@ -10,9 +10,10 @@ const targetdir = path.join('src', 'pages')
 const turndownService = new TurndownService()
 const layoutPath = path.join('..', '..', '..', 'layouts', 'layout.astro')
 const figureImport = 'import Figure from "@/components/Figure.astro"'
-// XXX: Ick. This shouldn't be global, but can't figure out how to pass a scoped version of it into the turndown service
+// XXX: Ick. These shouldn't be global, but can't figure out how to pass a scoped version of them into the turndown service
 // for access by the relevant rules. If this was long-lived code, I'd do it differently
 const imageMap: Map<string, string> = new Map()
+let currentArticle: Article | null = null
 
 interface Article {
     slug: string,
@@ -22,7 +23,25 @@ interface Article {
     categories: string[],
     author: string,
     date: Date,
+    figures: string[]
 }
+
+/**
+ * Special handling for code blocks
+ */
+turndownService.addRule('pre.EnlighterJSRAW', {
+    filter: 'pre',
+    replacement: function (content, node, _options) {
+        // EnlighterJSRAW
+        const e = node as HTMLElement
+        if (e.hasAttribute('class') && e.getAttribute('class')?.includes('EnlighterJSRAW')) {
+            const lang = e.getAttribute('data-enlighter-language') ? e.getAttribute('data-enlighter-language') : ''
+            return ('```' + lang + '\n' + content.trim() + '\n```\n\n')
+        } else {
+            return e.outerHTML
+        }
+    }
+})
 
 /**
  * Special handling for <figure>
@@ -35,11 +54,14 @@ turndownService.addRule('figure', {
             return `<figure>${_content}</figure>`
         }
         const img = e.querySelector('img')
-        const caption = e.querySelector('figcaption')?.textContent
+        let tmp = e.querySelector('figcaption')?.textContent
+        let caption: string = tmp ? tmp : ''
+        caption.replace(/Figure\s*\d*:*/, '')
         const src = img ? img.getAttribute('src') : ''
         const importedImage = src ? imageMap.get(src) : null
+        currentArticle?.figures.push(src ? src : '')
         if (importedImage) {
-            return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption ? caption : ''}"/>\n`
+            return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}" index={${currentArticle?.figures?.length}}/>\n`
         } else {
             return `**YIKES! ${src} does not map to an imported image**\n`
         }
@@ -145,11 +167,11 @@ async function main() {
     }
     let content = '<ul>'
     for (const item of articles.sort((a, b) => {
-        return  b.date.getTime() - a.date.getTime()
+        return b.date.getTime() - a.date.getTime()
     })) {
         console.log(item)
         const slug = item.slug
-        content += `<li><span>${format(item.date,'yyyy-MM-dd')}: </span><a href="${slug}" target="_blank">${path.basename(slug)}</a></li>\n`
+        content += `<li><span>${format(item.date, 'yyyy-MM-dd')}: </span><a href="${slug}" target="_blank">${path.basename(slug)}</a></li>\n`
     }
     content += '</ul>'
     await fs.writeFile('src/pages/blogs.md', content, 'utf8')
@@ -163,14 +185,15 @@ async function main() {
  * @param outpath the destination markdown/mdx file
  */
 async function translate(inpath: string, outpath: string) {
-    const article: Article = {
+    const article: Article = currentArticle = {
         author: '',
         categories: [],
         date: new Date(Date.parse('2018-01-01')),
         excerpt: '',
         featuredImage: '',
         slug: path.dirname(outpath.replace(targetdir, '')),
-        title: ''
+        title: '',
+        figures: [],
     }
     const outdir = path.dirname(outpath)
     console.log(`translate(): inpath: ${inpath}, outpath: ${outpath}, outdir: ${outdir}`)

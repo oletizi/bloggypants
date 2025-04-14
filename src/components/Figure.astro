@@ -1,8 +1,8 @@
 ---
 import {Image} from 'astro:assets'
-const {source, caption} = Astro.props
+const {source, caption, index} = Astro.props
 ---
 <figure>
     <Image src={source} alt={caption} width={950}/>
-    <figcaption>{caption ? caption : ''}</figcaption>
+    <figcaption><strong>Figure {index + caption && caption.length > 0 ? ': ' : ''}</strong>{caption ? caption : ''}</figcaption>
 </figure>
