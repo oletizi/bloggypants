@@ -10,8 +10,13 @@ async function main() {
     } catch (e) {
         await fs.mkdir(outdir)
     }
-
-    let sitemap = (await fs.readFile('sitemap.xml')).toString()
+    // https://tetrate.io/post-sitemap.xml
+    const res = await fetch('https://tetrate.io/post-sitemap.xml')
+    if (!res.ok) {
+        console.log(`Barf: ${res.status} ${res.statusText}`)
+        return
+    }
+    let sitemap = await res.text()//(await fs.readFile('sitemap.xml')).toString()
     const doc = new XMLParser().parse(sitemap, {})
     const urlset = doc.urlset
     for (const i of urlset.url) {
