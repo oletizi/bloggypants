@@ -10,6 +10,12 @@ const targetdir = path.join('src', 'pages')
 const turndownService = new TurndownService()
 const layoutPath = path.join('..', '..', '..', 'layouts', 'layout.astro')
 const figureImport = 'import Figure from "@/components/Figure.astro"'
+const inlinePromoImport = 'import InlinePromo from "@/components/InlinePromo.astro"'
+const componentImports = [
+    `import {Image} from "astro:assets"`,
+    figureImport,
+    inlinePromoImport
+]
 // XXX: Ick. These shouldn't be global, but can't figure out how to pass a scoped version of them into the turndown service
 // for access by the relevant rules. If this was long-lived code, I'd do it differently
 const imageMap: Map<string, string> = new Map()
@@ -113,6 +119,21 @@ turndownService.addRule('img', {
             return `<Image class="" src="${importedImage}" alt="${alt}">`
         } else {
             return ''
+        }
+    }
+})
+
+/**
+ * Special handling for inline promo
+ */
+turndownService.addRule('blockquote', {
+    filter: 'blockquote',
+    replacement: function (content, node: Node, _options) {
+        const e = node as HTMLElement
+        if (e.textContent?.includes('Tetrate offers an enterprise-ready')) {
+            return '<InlinePromo product="tis"/>\n\n'
+        } else {
+            return (node as HTMLElement).outerHTML
         }
     }
 })
@@ -333,9 +354,11 @@ async function translate(inpath: string, outpath: string) {
             `date: ${format(article.date, 'yyyy-MM-dd')}\n` +
             `featuredImage: ${article.featuredImage}\n` +
             `---\n` +
-            `import {Image} from "astro:assets"\n` +
-            `${figureImport}\n` +
+            componentImports.join('\n') + '\n' +
             imports.join('\n') +
+            // `import {Image} from "astro:assets"\n` +
+            // `${figureImport}\n` +
+            // imports.join('\n') +
             `\n\n` +
             markdown
 
