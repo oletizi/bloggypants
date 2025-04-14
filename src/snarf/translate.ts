@@ -27,9 +27,34 @@ interface Article {
 }
 
 /**
+ * Special handling for headings
+ */
+turndownService.addRule('h', {
+    filter: ['h2', 'h3', 'h4'],
+    replacement: function (content, node, _options) {
+        let heading = ''
+        switch (node.nodeName.toLowerCase()) {
+            case 'h2':
+                heading = '##'
+                break
+            case 'h3':
+                heading = '###'
+                break
+            case 'h4':
+                heading = '####'
+                break
+            case 'h5':
+                heading = '#####'
+                break
+        }
+        return heading + ' ' + content + '\n\n'
+    }
+})
+
+/**
  * Special handling for code blocks
  */
-turndownService.addRule('pre.EnlighterJSRAW', {
+turndownService.addRule('pre', {
     filter: 'pre',
     replacement: function (content, node, _options) {
         // EnlighterJSRAW
