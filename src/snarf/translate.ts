@@ -55,6 +55,15 @@ turndownService.addRule('h', {
     }
 })
 
+function cleanCodeBlock(content: string) {
+    return content.trim()
+        .replaceAll('\\\\', '\\')
+        .replaceAll('\\`', '`')
+        .replaceAll('\\[', '[')
+        .replaceAll('\\]', ']')
+        .replaceAll('\\_', '_')
+}
+
 /**
  * Special handling for code blocks
  */
@@ -65,16 +74,13 @@ turndownService.addRule('pre', {
         const e = node as HTMLElement
         if (e.hasAttribute('class') && e.getAttribute('class')?.includes('EnlighterJSRAW')) {
             const lang = e.getAttribute('data-enlighter-language') ? e.getAttribute('data-enlighter-language') : ''
-            let cleaned = content.trim()
-                .replaceAll('\\\\', '\\')
-                .replaceAll('\\`', '`')
-                .replaceAll('\\[', '[')
-                .replaceAll('\\]', ']')
-                .replaceAll('\\_', '_')
+            let cleaned = cleanCodeBlock(content)
             return ('```' + lang + '\n' +
                 cleaned
                 +
                 '\n```\n\n')
+        } else if (e.hasAttribute('class') && e.getAttribute('class')?.includes('wp-block-code')) {
+            return '```\n' + cleanCodeBlock(content) + '\n```\n\n'
         } else {
             return e.outerHTML
         }
