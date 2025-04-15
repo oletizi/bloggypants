@@ -95,7 +95,7 @@ turndownService.addRule('figure', {
     replacement: function (_content, node: Node, _options) {
         const e = node as Element
         if (e.querySelector('iframe')) {
-            return `<figure>${_content}</figure>`
+            return `<figure>${_content}</figure>\n\n`
         }
         const img = e.querySelector('img')
         let tmp = e.querySelector('figcaption')?.textContent
@@ -146,7 +146,8 @@ turndownService.addRule('blockquote', {
         if (e.textContent?.includes('Tetrate offers an enterprise-ready')) {
             return '<InlinePromo product="tis"/>\n\n'
         } else {
-            return (node as HTMLElement).outerHTML
+            // return (node as HTMLElement).outerHTML
+            return content
         }
     }
 })
