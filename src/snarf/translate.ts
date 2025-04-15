@@ -82,7 +82,7 @@ turndownService.addRule('pre', {
         } else if (e.hasAttribute('class') && e.getAttribute('class')?.includes('wp-block-code')) {
             return '```\n' + cleanCodeBlock(content) + '\n```\n\n'
         } else {
-            return e.outerHTML
+            return content
         }
     }
 })
@@ -146,7 +146,6 @@ turndownService.addRule('blockquote', {
         if (e.textContent?.includes('Tetrate offers an enterprise-ready')) {
             return '<InlinePromo product="tis"/>\n\n'
         } else {
-            // return (node as HTMLElement).outerHTML
             return content
         }
     }
