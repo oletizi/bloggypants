@@ -4,14 +4,14 @@ import path from 'node:path'
 
 const outdir = path.join('build', 'snarfed')
 
-async function main() {
+async function main(sitemapUrl: string = 'https://tetrate.io/post-sitemap.xml') {
     try {
         await fs.stat(outdir)
     } catch (e) {
         await fs.mkdir(outdir)
     }
     // https://tetrate.io/post-sitemap.xml
-    const res = await fetch('https://tetrate.io/post-sitemap.xml')
+    const res = await fetch(sitemapUrl)
     if (!res.ok) {
         console.log(`Barf: ${res.status} ${res.statusText}`)
         return
@@ -47,4 +47,4 @@ async function main() {
 }
 
 
-main().then(() => console.log('Done.'))
+main(process.argv.length >= 3 ? process.argv[2] : '').then(() => console.log('Done.'))

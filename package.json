@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "snarf": "tsx src/snarf/snarf.ts",
-    "translate": "npm run snarf && tsx src/snarf/translate.ts"
+    "snarf:learn": "tsx src/snarf/snarf.ts https://tetrate.pm.peppermint.id/article-sitemap.xml",
+    "translate": "tsx src/snarf/translate.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.3",

@@ -8,7 +8,7 @@ const width = `100%`
 const sourcedir = path.join('build', 'snarfed')
 const targetdir = path.join('src', 'pages')
 const turndownService = new TurndownService()
-const layoutPath = path.join('..', '..', '..', 'layouts', 'layout.astro')
+const layoutName = 'layout.astro'
 const componentImports = [
     `import {Image} from "astro:assets"`,
     'import Figure from "@/components/Figure.astro"',
@@ -354,6 +354,9 @@ async function translate(inpath: string, outpath: string) {
             }
         }
 
+
+        const relativePath = outpath.replace(targetdir, '')
+        const layoutPath = path.join(path.join(path.dirname(relativePath).split('/').map(_i => '..').join('/')), 'layouts', layoutName)
         //
         // Convert html to markdown
         //
