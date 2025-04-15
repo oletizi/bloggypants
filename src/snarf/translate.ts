@@ -112,6 +112,19 @@ turndownService.addRule('figure', {
     }
 })
 
+/**
+ * Special handling for whatever 'application/ld+json' is.
+ */
+turndownService.addRule('script', {
+    filter: 'script',
+    replacement: function (content, node, _options) {
+        const e = node as Element
+        if (e.getAttribute('type') && e.getAttribute('type')?.includes('application/ld+json')) {
+            return '\n'
+        }
+        return content
+    }
+})
 
 /**
  * Special handling for <img>
