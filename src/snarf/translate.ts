@@ -385,9 +385,6 @@ async function translate(inpath: string, outpath: string) {
             `---\n` +
             componentImports.join('\n') + '\n' +
             imports.join('\n') +
-            // `import {Image} from "astro:assets"\n` +
-            // `${figureImport}\n` +
-            // imports.join('\n') +
             `\n\n` +
             markdown
 
@@ -399,16 +396,10 @@ async function translate(inpath: string, outpath: string) {
 }
 
 function antinormalizeEncode(src: string | null): string {
-    // return src
-    //     ? antinormalizeToken + path.basename(src)
-    //     : ''
     return src ? path.basename(src) : ''
 }
 
 function antinormalizeDecode(src: string | null): string {
-    // return src && src.includes(antinormalizeToken)
-    //     ? './' + src.substring(src.indexOf(antinormalizeToken) + antinormalizeToken.length)
-    //     : src ? src : ''
     return src ? src : ''
 }
 
