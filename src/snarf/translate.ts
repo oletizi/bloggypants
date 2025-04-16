@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'node:path'
-import {format} from 'date-fns'
+import {format, isAfter} from 'date-fns'
 import {JSDOM} from 'jsdom'
 import TurndownService from 'turndown'
 
@@ -379,8 +379,8 @@ async function translate(inpath: string, outpath: string) {
             `layout: ${layoutPath}\n` +
             `slug: ${article.slug}\n` +
             `title: ${article.title}\n` +
-            `author: ${article.author}\n` +
-            `date: ${format(article.date, 'yyyy-MM-dd')}\n` +
+            (article.author ? `author: ${article.author}\n` : '') +
+            (isAfter(article.date, '2018-12-31') ? `date: ${format(article.date, 'yyyy-MM-dd')}\n` : '') +
             `featuredImage: ${article.featuredImage}\n` +
             `---\n` +
             componentImports.join('\n') + '\n' +
