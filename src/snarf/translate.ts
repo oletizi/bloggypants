@@ -381,7 +381,7 @@ async function translate(inpath: string, outpath: string) {
             `title: ${article.title}\n` +
             (article.author ? `author: ${article.author}\n` : '') +
             (isAfter(article.date, '2018-12-31') ? `date: ${format(article.date, 'yyyy-MM-dd')}\n` : '') +
-            `featuredImage: ${article.featuredImage}\n` +
+            (article.featuredImage ? `featuredImage: ${article.featuredImage}\n` : '') +
             `---\n` +
             componentImports.join('\n') + '\n' +
             imports.join('\n') +
