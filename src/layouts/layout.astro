@@ -43,6 +43,7 @@ const {frontmatter} = Astro.props
         <h1>{decodeURIComponent(frontmatter.title)}</h1>
         <div>Date: {format(new Date(frontmatter.date ? frontmatter.date : new Date()), 'LLL d, yyyy')}</div>
         <div>Author: {frontmatter.author}</div>
+        {frontmatter.hubspotFormId ? (<div>Hubspot form id: {frontmatter.hubspotFormId}</div>) : ''}
         <div><a href={'https://tetrate.io' + frontmatter.slug} target="_blank">Wordpress &rsaquo;</a></div>
         <slot/>
     </div>

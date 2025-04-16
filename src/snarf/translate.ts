@@ -20,6 +20,7 @@ const imageMap: Map<string, string> = new Map()
 let currentArticle: Article | null = null
 
 interface Article {
+    hubspotFormId: string
     slug: string,
     title: string,
     excerpt: string,
@@ -104,7 +105,7 @@ turndownService.addRule('figure', {
         const src = img ? img.getAttribute('src') : ''
         const importedImage = src ? imageMap.get(src) : null
         currentArticle?.figures.push(src ? src : '')
-        let rv  = ''
+        let rv = ''
         if (importedImage) {
             rv = `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}" index={${currentArticle?.figures?.length}}/>\n`
         } else if (e.querySelector('table')) {
@@ -121,12 +122,8 @@ turndownService.addRule('figure', {
  */
 turndownService.addRule('script', {
     filter: 'script',
-    replacement: function (content, node, _options) {
-        const e = node as Element
-        if (e.getAttribute('type') && e.getAttribute('type')?.includes('application/ld+json')) {
-            return '\n'
-        }
-        return content
+    replacement: function (_content, node, _options) {
+        return ''
     }
 })
 
@@ -267,6 +264,7 @@ async function translate(inpath: string, outpath: string) {
         date: new Date(Date.parse('2018-01-01')),
         excerpt: '',
         featuredImage: '',
+        hubspotFormId: '',
         slug: path.dirname(outpath.replace(targetdir, '')),
         title: '',
         figures: [],
@@ -316,6 +314,17 @@ async function translate(inpath: string, outpath: string) {
         }
     }
     console.log(`  AUTHOR: ${article.author}`)
+
+    // Find any hubspot forms
+    const scripts = doc.querySelectorAll('script')
+    for (const script of scripts) {
+        if (script.textContent && script.textContent?.includes('hbspt.forms.create')) {
+            const match = script.textContent?.match(/formId:\s+"(.+)"/)
+            if (match) {
+                article.hubspotFormId = match[1]
+            }
+        }
+    }
 
     //
     // Find <div.entry__content> and transform it to markdown
@@ -386,6 +395,7 @@ async function translate(inpath: string, outpath: string) {
             (article.author ? `author: ${article.author}\n` : '') +
             (isAfter(article.date, '2018-12-31') ? `date: ${format(article.date, 'yyyy-MM-dd')}\n` : '') +
             (article.featuredImage ? `featuredImage: ${article.featuredImage}\n` : '') +
+            (article.hubspotFormId ? `hubspotFormId: ${article.hubspotFormId}\n` : '') +
             `---\n` +
             componentImports.join('\n') + '\n' +
             imports.join('\n') +
