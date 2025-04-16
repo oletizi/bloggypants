@@ -92,10 +92,10 @@ turndownService.addRule('pre', {
  */
 turndownService.addRule('figure', {
     filter: 'figure',
-    replacement: function (_content, node: Node, _options) {
+    replacement: function (content, node: Node, _options) {
         const e = node as Element
         if (e.querySelector('iframe')) {
-            return `<figure>${_content}</figure>\n\n`
+            return `<figure>${content}</figure>\n\n`
         }
         const img = e.querySelector('img')
         let tmp = e.querySelector('figcaption')?.textContent
@@ -104,11 +104,15 @@ turndownService.addRule('figure', {
         const src = img ? img.getAttribute('src') : ''
         const importedImage = src ? imageMap.get(src) : null
         currentArticle?.figures.push(src ? src : '')
+        let rv  = ''
         if (importedImage) {
-            return `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}" index={${currentArticle?.figures?.length}}/>\n`
+            rv = `<Figure source={${src ? imageMap.get(src) : ''}} width={"${width}"} caption="${caption}" index={${currentArticle?.figures?.length}}/>\n`
+        } else if (e.querySelector('table')) {
+            rv += e.querySelector('table')?.outerHTML
         } else {
-            return `<figure>![${caption}](${src})<figcaption>${caption}</figcaption></figure>`
+            rv = content
         }
+        return rv
     }
 })
 
