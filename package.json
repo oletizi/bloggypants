@@ -7,8 +7,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "snarf": "tsx src/snarf/snarf.ts",
+    "snarf:blog": "tsx src/snarf/snarf.ts https://tetrate.pm.peppermint.id/post-sitemap.xml",
     "snarf:learn": "tsx src/snarf/snarf.ts https://tetrate.pm.peppermint.id/article-sitemap.xml",
+    "snarf:resources": "tsx src/snarf/snarf.ts https://tetrate.pm.peppermint.id/resource-sitemap.xml",
+    "snarf": "npm run snarf:blog && npm run snarf:learn && npm run snarf:resources",
     "translate": "tsx src/snarf/translate.ts"
   },
   "dependencies": {
