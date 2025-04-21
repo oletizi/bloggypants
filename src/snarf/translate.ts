@@ -247,7 +247,7 @@ async function main() {
         content += `<li><span>${format(item.date, 'yyyy-MM-dd')}: </span><a href="${slug}" target="_blank">${path.basename(slug)}</a></li>\n`
     }
     content += '</ul>'
-    await fs.writeFile('src/pages/blogs.md', content, 'utf8')
+    await fs.writeFile('src/pages/translated.md', content, 'utf8')
 }
 
 /**
