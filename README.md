@@ -1,6 +1,9 @@
 # Bloggypants
 
-1. Run pnpm/npm install
+1. Run npm install
+```shell
+npm install
+```
 2. Run snarf to download blog, learn, and reasources html
 ```shell
 npm run snarf
