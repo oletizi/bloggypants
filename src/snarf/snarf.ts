@@ -8,7 +8,7 @@ async function main(sitemapUrl: string = 'https://tetrate.io/post-sitemap.xml') 
     try {
         await fs.stat(outdir)
     } catch (e) {
-        await fs.mkdir(outdir)
+        await fs.mkdir(outdir, {recursive: true})
     }
     // https://tetrate.io/post-sitemap.xml
     const res = await fetch(sitemapUrl)
